@@ -8,6 +8,7 @@ class WeatherCard extends StatelessWidget {
   final String condition;
   final String humidity;
   final String windSpeed;
+  final bool isAvailable;
   final String? updateTime;
   final VoidCallback? onMoreTap;
   final VoidCallback? onRefresh;
@@ -19,6 +20,7 @@ class WeatherCard extends StatelessWidget {
     this.condition = 'આંશિક વાદળછાયું',
     this.humidity = '65%',
     this.windSpeed = '12 km/h',
+    this.isAvailable = false,
     this.updateTime,
     this.onMoreTap,
     this.onRefresh,
@@ -46,18 +48,25 @@ class WeatherCard extends StatelessWidget {
           // Header row
           Row(
             children: [
-              const Icon(Icons.location_on, size: 16, color: AppColors.primary),
+              Icon(
+                isAvailable ? Icons.location_on : Icons.cloud_off_outlined,
+                size: 16,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 4),
-              Text(
-                location,
-                style: GoogleFonts.hindVadodara(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textDark,
+              Expanded(
+                child: Text(
+                  isAvailable ? location : 'હવામાન માહિતી',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.hindVadodara(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
+                  ),
                 ),
               ),
-              const Spacer(),
-              if (updateTime != null) ...[
+              if (isAvailable && updateTime != null) ...[
                 Text(
                   updateTime!,
                   style: GoogleFonts.hindVadodara(
@@ -68,7 +77,11 @@ class WeatherCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 InkWell(
                   onTap: onRefresh,
-                  child: const Icon(Icons.refresh, size: 16, color: AppColors.textMedium),
+                  child: const Icon(
+                    Icons.refresh,
+                    size: 16,
+                    color: AppColors.textMedium,
+                  ),
                 ),
               ] else if (onMoreTap != null) ...[
                 InkWell(
@@ -83,7 +96,11 @@ class WeatherCard extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const Icon(Icons.chevron_right, size: 16, color: AppColors.primary),
+                      const Icon(
+                        Icons.chevron_right,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
                     ],
                   ),
                 ),
@@ -91,37 +108,45 @@ class WeatherCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          // 4 stats row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildWeatherStat(
-                icon: Icons.thermostat_outlined,
-                iconColor: Colors.green,
-                value: temperature,
-                label: 'તાપમાન',
+          if (isAvailable)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildWeatherStat(
+                  icon: Icons.thermostat_outlined,
+                  iconColor: Colors.green,
+                  value: temperature,
+                  label: 'તાપમાન',
+                ),
+                _buildWeatherStat(
+                  icon: Icons.wb_sunny_outlined,
+                  iconColor: Colors.amber,
+                  value: condition,
+                  label: 'હવામાન',
+                  compactValue: true,
+                ),
+                _buildWeatherStat(
+                  icon: Icons.water_drop_outlined,
+                  iconColor: Colors.blue,
+                  value: humidity,
+                  label: 'ભેજ',
+                ),
+                _buildWeatherStat(
+                  icon: Icons.air,
+                  iconColor: Colors.teal,
+                  value: windSpeed,
+                  label: 'પવન',
+                ),
+              ],
+            )
+          else
+            Text(
+              'હવામાન સેવા જોડાયેલી નથી; હાલમાં કોઈ આગાહી બતાવવામાં આવતી નથી.',
+              style: GoogleFonts.hindVadodara(
+                fontSize: 12,
+                color: AppColors.textMedium,
               ),
-              _buildWeatherStat(
-                icon: Icons.wb_sunny_outlined,
-                iconColor: Colors.amber,
-                value: condition,
-                label: 'હવામાન',
-                compactValue: true,
-              ),
-              _buildWeatherStat(
-                icon: Icons.water_drop_outlined,
-                iconColor: Colors.blue,
-                value: humidity,
-                label: 'ભેજ',
-              ),
-              _buildWeatherStat(
-                icon: Icons.air,
-                iconColor: Colors.teal,
-                value: windSpeed,
-                label: 'પવન',
-              ),
-            ],
-          ),
+            ),
         ],
       ),
     );

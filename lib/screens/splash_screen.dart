@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../navigation/app_routes.dart';
 import '../theme/app_theme.dart';
-import 'auth/login_screen.dart';
-import 'auth/register_screen.dart';
-import 'home/home_screen_v1.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -24,12 +22,13 @@ class SplashScreen extends StatelessWidget {
                   alignment: Alignment.topRight,
                   child: TextButton.icon(
                     onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const HomeScreenV1()),
-                      );
+                      AppRoutes.replace(context, AppRoutes.homeV1);
                     },
-                    icon: const Icon(Icons.arrow_forward, size: 16, color: AppColors.primary),
+                    icon: const Icon(
+                      Icons.arrow_forward,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
                     label: Text(
                       'હોમ પર જાઓ',
                       style: GoogleFonts.hindVadodara(
@@ -45,11 +44,17 @@ class SplashScreen extends StatelessWidget {
                 // Main Logo & Brand Box
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 24,
+                    horizontal: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(32),
-                    border: Border.all(color: const Color(0xFF2E8B4E), width: 1.5),
+                    border: Border.all(
+                      color: const Color(0xFF2E8B4E),
+                      width: 1.5,
+                    ),
                     boxShadow: const [
                       BoxShadow(
                         color: Color(0x0C000000),
@@ -61,27 +66,34 @@ class SplashScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       // AgriConnect Title with leaf
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Agri',
-                            style: GoogleFonts.poppins(
-                              fontSize: 34,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF134E28),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Agri',
+                              style: GoogleFonts.poppins(
+                                fontSize: 34,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF134E28),
+                              ),
                             ),
-                          ),
-                          const Icon(Icons.eco, color: Color(0xFF4CAF50), size: 30),
-                          Text(
-                            'connect',
-                            style: GoogleFonts.poppins(
-                              fontSize: 34,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF2E8B4E),
+                            const Icon(
+                              Icons.eco,
+                              color: Color(0xFF4CAF50),
+                              size: 30,
                             ),
-                          ),
-                        ],
+                            Text(
+                              'connect',
+                              style: GoogleFonts.poppins(
+                                fontSize: 34,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF2E8B4E),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       Text(
                         '(એગ્રી કનેક્ટ)',
@@ -93,34 +105,16 @@ class SplashScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       // Slogan divider
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 30,
-                            height: 1,
-                            color: const Color(0xFF81C784),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'farmer welfare application',
+                          style: GoogleFonts.hindVadodara(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF4A5568),
                           ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.eco, size: 14, color: Color(0xFF4CAF50)),
-                          const SizedBox(width: 8),
-                          Text(
-                            'farmer welfare application',
-                            style: GoogleFonts.hindVadodara(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF4A5568),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.eco, size: 14, color: Color(0xFF4CAF50)),
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 30,
-                            height: 1,
-                            color: const Color(0xFF81C784),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
@@ -135,7 +129,10 @@ class SplashScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white,
-                    border: Border.all(color: const Color(0xFF7CB342), width: 3),
+                    border: Border.all(
+                      color: const Color(0xFF7CB342),
+                      width: 3,
+                    ),
                     boxShadow: const [
                       BoxShadow(
                         color: Color(0x18000000),
@@ -149,7 +146,7 @@ class SplashScreen extends StatelessWidget {
                     child: Image.asset(
                       'assets/images/farmer_circle_logo.png',
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
+                      errorBuilder: (_, _, _) => const Icon(
                         Icons.person,
                         size: 90,
                         color: AppColors.primary,
@@ -168,7 +165,7 @@ class SplashScreen extends StatelessWidget {
                     height: 110,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
                   ),
                 ),
 
@@ -176,7 +173,10 @@ class SplashScreen extends StatelessWidget {
 
                 // Bottom 5 Feature Icons from Wireframe
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -185,15 +185,40 @@ class SplashScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildFeatureItem(Icons.eco_outlined, 'Crop\nAdvisory'),
+                      _buildFeatureItem(
+                        context,
+                        Icons.eco_outlined,
+                        'Crop\nAdvisory',
+                        AppRoutes.cropAdvisory,
+                      ),
                       _buildFeatureDivider(),
-                      _buildFeatureItem(Icons.wb_sunny_outlined, 'Weather\nUpdates'),
+                      _buildFeatureItem(
+                        context,
+                        Icons.wb_sunny_outlined,
+                        'Weather\nUpdates',
+                        AppRoutes.weather,
+                      ),
                       _buildFeatureDivider(),
-                      _buildFeatureItem(Icons.account_balance_outlined, 'Government\nSchemes'),
+                      _buildFeatureItem(
+                        context,
+                        Icons.account_balance_outlined,
+                        'Government\nSchemes',
+                        AppRoutes.schemes,
+                      ),
                       _buildFeatureDivider(),
-                      _buildFeatureItem(Icons.trending_up, 'Market\nPrices'),
+                      _buildFeatureItem(
+                        context,
+                        Icons.trending_up,
+                        'Market\nPrices',
+                        AppRoutes.market,
+                      ),
                       _buildFeatureDivider(),
-                      _buildFeatureItem(Icons.headset_mic_outlined, 'Expert\nSupport'),
+                      _buildFeatureItem(
+                        context,
+                        Icons.headset_mic_outlined,
+                        'Expert\nSupport',
+                        AppRoutes.support,
+                      ),
                     ],
                   ),
                 ),
@@ -206,10 +231,7 @@ class SplashScreen extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const LoginScreen()),
-                          );
+                          AppRoutes.open(context, AppRoutes.login);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
@@ -232,13 +254,13 @@ class SplashScreen extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                          );
+                          AppRoutes.open(context, AppRoutes.register);
                         },
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.primary, width: 1.5),
+                          side: const BorderSide(
+                            color: AppColors.primary,
+                            width: 1.5,
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -266,31 +288,39 @@ class SplashScreen extends StatelessWidget {
   }
 
   Widget _buildFeatureDivider() {
-    return Container(
-      width: 1,
-      height: 36,
-      color: const Color(0xFFE2EDE0),
-    );
+    return Container(width: 1, height: 36, color: const Color(0xFFE2EDE0));
   }
 
-  Widget _buildFeatureItem(IconData icon, String label) {
+  Widget _buildFeatureItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String route,
+  ) {
     return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 24, color: AppColors.primary),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.hindVadodara(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textMedium,
-              height: 1.2,
-            ),
+      child: InkWell(
+        onTap: () => AppRoutes.open(context, route),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 24, color: AppColors.primary),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.hindVadodara(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textMedium,
+                  height: 1.2,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

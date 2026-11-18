@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../navigation/app_routes.dart';
+import '../../services/app_store.dart';
 import '../../theme/app_theme.dart';
-import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -21,13 +22,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _agreeTerms = false;
+  bool _isLoading = false;
 
   String? _selectedDistrict = 'રાજકોટ';
   String? _selectedTaluka = 'રાજકોટ ગ્રામ્ય';
   String? _selectedLanguage = 'ગુજરાતી';
 
-  final List<String> _districts = ['રાજકોટ', 'અમદાવાદ', 'જૂનાગઢ', 'જામનગર', 'ભાવનગર', 'અમરેલી', 'વડોદરા', 'સુરત'];
-  final List<String> _talukas = ['રાજકોટ ગ્રામ્ય', 'ગોંડલ', 'જેતપુર', 'ધોરાજી', 'ઉપલેટા', 'કોટડા સાંગાણી', 'લોધિકા'];
+  final List<String> _districts = [
+    'રાજકોટ',
+    'અમદાવાદ',
+    'જૂનાગઢ',
+    'જામનગર',
+    'ભાવનગર',
+    'અમરેલી',
+    'વડોદરા',
+    'સુરત',
+  ];
+  final List<String> _talukas = [
+    'રાજકોટ ગ્રામ્ય',
+    'ગોંડલ',
+    'જેતપુર',
+    'ધોરાજી',
+    'ઉપલેટા',
+    'કોટડા સાંગાણી',
+    'લોધિકા',
+  ];
   final List<String> _languages = ['ગુજરાતી', 'English', 'हिन्दी'];
 
   @override
@@ -40,7 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _handleRegister() {
+  Future<void> _handleRegister() async {
     if (!_agreeTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('કૃપા કરીને નિયમો અને શરતો સ્વીકારો')),
@@ -48,40 +67,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    if (_formKey.currentState?.validate() ?? false) {
-      if (_passwordController.text != _confirmPasswordController.text) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('બંને પાસવર્ડ મેળ ખાતા નથી!')),
-        );
-        return;
-      }
-
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(
-            'નોંધણી સફળ!',
-            style: GoogleFonts.hindVadodara(fontWeight: FontWeight.bold, color: AppColors.primary),
-          ),
-          content: Text(
-            'તમારું એકાઉન્ટ સફળતાપૂર્વક બનાવી દીધું છે. હવે લૉગિન કરો.',
-            style: GoogleFonts.hindVadodara(),
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
-              },
-              child: const Text('લૉગિન પર જાઓ'),
-            ),
-          ],
-        ),
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() => _isLoading = true);
+    try {
+      await AppStore.instance.register(
+        name: _nameController.text,
+        mobile: _mobileController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+        district: _selectedDistrict ?? '',
+        taluka: _selectedTaluka ?? '',
+        language: _selectedLanguage ?? 'ગુજરાતી',
       );
+      if (mounted) AppRoutes.replaceAll(context, AppRoutes.homeV1);
+    } on AppStoreException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -94,31 +100,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
           icon: const Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Column(
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.eco, color: Color(0xFF4CAF50), size: 18),
-                const SizedBox(width: 4),
-                Text(
-                  'AgriConnect',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF16542A),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.eco, color: Color(0xFF4CAF50), size: 18),
+                  const SizedBox(width: 4),
+                  Text(
+                    'AgriConnect',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF16542A),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            Text(
-              'ખેડૂતનો સાથી, ખેતીમાં પ્રગતિ સાથે',
-              style: GoogleFonts.hindVadodara(
-                fontSize: 10,
-                color: AppColors.textMedium,
+                ],
               ),
-            ),
-          ],
+              Text(
+                'ખેડૂતનો સાથી, ખેતીમાં પ્રગતિ સાથે',
+                style: GoogleFonts.hindVadodara(
+                  fontSize: 10,
+                  color: AppColors.textMedium,
+                ),
+              ),
+            ],
+          ),
         ),
         centerTitle: true,
         actions: const [SizedBox(width: 48)],
@@ -169,11 +178,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           'assets/images/illus_register.png',
                           height: 90,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
-                            Icons.person_pin,
-                            size: 70,
-                            color: AppColors.primary,
-                          ),
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                                Icons.person_pin,
+                                size: 70,
+                                color: AppColors.primary,
+                              ),
                         ),
                       ),
                     ),
@@ -192,10 +202,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.person_outline, color: AppColors.primary, size: 20),
+                    prefixIcon: Icon(
+                      Icons.person_outline,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
                     hintText: 'તમારું પૂરું નામ દાખલ કરો',
                   ),
-                  validator: (v) => (v == null || v.isEmpty) ? 'પૂરું નામ દાખલ કરો' : null,
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'પૂરું નામ દાખલ કરો' : null,
                 ),
 
                 const SizedBox(height: 14),
@@ -207,13 +222,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: TextInputType.phone,
                   maxLength: 10,
                   decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.phone_outlined, color: AppColors.primary, size: 20),
+                    prefixIcon: Icon(
+                      Icons.phone_outlined,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
                     hintText: '10 અંકોનો મોબાઇલ નંબર',
                     counterText: '',
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'મોબાઇલ નંબર દાખલ કરો';
-                    if (v.length < 10) return 'માન્ય 10 અંકનો નંબર દાખલ કરો';
+                    if (v == null || v.trim().isEmpty) {
+                      return 'મોબાઇલ નંબર દાખલ કરો';
+                    }
+                    if (!RegExp(r'^\d{10}$').hasMatch(v.trim())) {
+                      return 'માન્ય 10 અંકનો નંબર દાખલ કરો';
+                    }
                     return null;
                   },
                 ),
@@ -226,9 +249,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.mail_outline, color: AppColors.primary, size: 20),
+                    prefixIcon: Icon(
+                      Icons.mail_outline,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
                     hintText: 'ઈમેઈલ ID દાખલ કરો',
                   ),
+                  validator: (value) {
+                    final email = value?.trim() ?? '';
+                    if (email.isNotEmpty &&
+                        !RegExp(
+                          r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                        ).hasMatch(email)) {
+                      return 'માન્ય ઈમેઈલ દાખલ કરો';
+                    }
+                    return null;
+                  },
                 ),
 
                 const SizedBox(height: 14),
@@ -239,18 +276,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary, size: 20),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
                     hintText: 'પાસવર્ડ બનાવો',
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        _obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         color: AppColors.textLight,
                         size: 20,
                       ),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
-                  validator: (v) => (v == null || v.length < 6) ? 'ઓછામાં ઓછા 6 અક્ષર દાખલ કરો' : null,
+                  validator: (v) => (v == null || v.length < 8)
+                      ? 'ઓછામાં ઓછા 8 અક્ષર દાખલ કરો'
+                      : null,
                 ),
 
                 const SizedBox(height: 14),
@@ -261,18 +307,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary, size: 20),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
                     hintText: 'પાસવર્ડ ફરી દાખલ કરો',
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        _obscureConfirmPassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         color: AppColors.textLight,
                         size: 20,
                       ),
-                      onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                      onPressed: () => setState(
+                        () =>
+                            _obscureConfirmPassword = !_obscureConfirmPassword,
+                      ),
                     ),
                   ),
-                  validator: (v) => (v == null || v.isEmpty) ? 'પાસવર્ડ ફરી દાખલ કરો' : null,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'પાસવર્ડ ફરી દાખલ કરો';
+                    if (v != _passwordController.text) {
+                      return 'બંને પાસવર્ડ મેળ ખાતા નથી';
+                    }
+                    return null;
+                  },
                 ),
 
                 const SizedBox(height: 14),
@@ -286,12 +347,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         children: [
                           _buildFieldLabel('જિલ્લો *'),
                           DropdownButtonFormField<String>(
-                            value: _selectedDistrict,
+                            initialValue: _selectedDistrict,
+                            isExpanded: true,
                             decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
                             ),
-                            items: _districts.map((d) => DropdownMenuItem(value: d, child: Text(d, style: GoogleFonts.hindVadodara(fontSize: 13)))).toList(),
-                            onChanged: (v) => setState(() => _selectedDistrict = v),
+                            items: _districts
+                                .map(
+                                  (d) => DropdownMenuItem(
+                                    value: d,
+                                    child: Text(
+                                      d,
+                                      style: GoogleFonts.hindVadodara(
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (v) =>
+                                setState(() => _selectedDistrict = v),
                           ),
                         ],
                       ),
@@ -303,12 +381,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         children: [
                           _buildFieldLabel('તાલુકો *'),
                           DropdownButtonFormField<String>(
-                            value: _selectedTaluka,
+                            initialValue: _selectedTaluka,
+                            isExpanded: true,
                             decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
                             ),
-                            items: _talukas.map((t) => DropdownMenuItem(value: t, child: Text(t, style: GoogleFonts.hindVadodara(fontSize: 13)))).toList(),
-                            onChanged: (v) => setState(() => _selectedTaluka = v),
+                            items: _talukas
+                                .map(
+                                  (t) => DropdownMenuItem(
+                                    value: t,
+                                    child: Text(
+                                      t,
+                                      style: GoogleFonts.hindVadodara(
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (v) =>
+                                setState(() => _selectedTaluka = v),
                           ),
                         ],
                       ),
@@ -321,11 +416,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Language Dropdown
                 _buildFieldLabel('ભાષા પસંદ કરો *'),
                 DropdownButtonFormField<String>(
-                  value: _selectedLanguage,
+                  initialValue: _selectedLanguage,
+                  isExpanded: true,
                   decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.translate, color: AppColors.primary, size: 20),
+                    prefixIcon: Icon(
+                      Icons.translate,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
                   ),
-                  items: _languages.map((l) => DropdownMenuItem(value: l, child: Text(l, style: GoogleFonts.hindVadodara(fontSize: 14)))).toList(),
+                  items: _languages
+                      .map(
+                        (l) => DropdownMenuItem(
+                          value: l,
+                          child: Text(
+                            l,
+                            style: GoogleFonts.hindVadodara(fontSize: 14),
+                          ),
+                        ),
+                      )
+                      .toList(),
                   onChanged: (v) => setState(() => _selectedLanguage = v),
                 ),
 
@@ -341,8 +451,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Checkbox(
                         value: _agreeTerms,
                         activeColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                        onChanged: (v) => setState(() => _agreeTerms = v ?? false),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        onChanged: (v) =>
+                            setState(() => _agreeTerms = v ?? false),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -365,28 +478,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _handleRegister,
+                    onPressed: _isLoading ? null : _handleRegister,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1B5E20),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'આગળ વધો',
-                          style: GoogleFonts.hindVadodara(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'આગળ વધો',
+                                style: GoogleFonts.hindVadodara(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.arrow_forward,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward, color: Colors.white, size: 18),
-                      ],
-                    ),
                   ),
                 ),
 
@@ -395,10 +521,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Bottom Login Link
                 Center(
                   child: InkWell(
-                    onTap: () => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    ),
+                    onTap: () => AppRoutes.replace(context, AppRoutes.login),
                     child: RichText(
                       text: TextSpan(
                         text: 'પહેલાથી ખાતું છે? ',
@@ -438,13 +561,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         border: Border.all(color: const Color(0xFFE5EDE3)),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStepItem(1, 'મૂળ માહિતી', true),
+          SizedBox(width: 68, child: _buildStepItem(1, 'મૂળ માહિતી', true)),
           _buildStepLine(),
-          _buildStepItem(2, 'ખેતરની માહિતી', false),
+          SizedBox(width: 68, child: _buildStepItem(2, 'ખેતર', false)),
           _buildStepLine(),
-          _buildStepItem(3, 'ચકાસણી', false),
+          SizedBox(width: 68, child: _buildStepItem(3, 'ચકાસણી', false)),
         ],
       ),
     );
@@ -477,6 +599,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         const SizedBox(height: 4),
         Text(
           title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: GoogleFonts.hindVadodara(
             fontSize: 11,
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,

@@ -29,16 +29,16 @@ class FarmerAccount {
   final String passwordDigest;
 
   factory FarmerAccount.fromJson(Map<String, dynamic> json) => FarmerAccount(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        mobile: json['mobile'] as String,
-        email: json['email'] as String? ?? '',
-        district: json['district'] as String? ?? '',
-        taluka: json['taluka'] as String? ?? '',
-        language: json['language'] as String? ?? 'ગુજરાતી',
-        passwordSalt: json['passwordSalt'] as String,
-        passwordDigest: json['passwordDigest'] as String,
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    mobile: json['mobile'] as String,
+    email: json['email'] as String? ?? '',
+    district: json['district'] as String? ?? '',
+    taluka: json['taluka'] as String? ?? '',
+    language: json['language'] as String? ?? 'ગુજરાતી',
+    passwordSalt: json['passwordSalt'] as String,
+    passwordDigest: json['passwordDigest'] as String,
+  );
 
   FarmerAccount copyWith({
     String? name,
@@ -47,30 +47,29 @@ class FarmerAccount {
     String? district,
     String? taluka,
     String? language,
-  }) =>
-      FarmerAccount(
-        id: id,
-        name: name ?? this.name,
-        mobile: mobile ?? this.mobile,
-        email: email ?? this.email,
-        district: district ?? this.district,
-        taluka: taluka ?? this.taluka,
-        language: language ?? this.language,
-        passwordSalt: passwordSalt,
-        passwordDigest: passwordDigest,
-      );
+  }) => FarmerAccount(
+    id: id,
+    name: name ?? this.name,
+    mobile: mobile ?? this.mobile,
+    email: email ?? this.email,
+    district: district ?? this.district,
+    taluka: taluka ?? this.taluka,
+    language: language ?? this.language,
+    passwordSalt: passwordSalt,
+    passwordDigest: passwordDigest,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'mobile': mobile,
-        'email': email,
-        'district': district,
-        'taluka': taluka,
-        'language': language,
-        'passwordSalt': passwordSalt,
-        'passwordDigest': passwordDigest,
-      };
+    'id': id,
+    'name': name,
+    'mobile': mobile,
+    'email': email,
+    'district': district,
+    'taluka': taluka,
+    'language': language,
+    'passwordSalt': passwordSalt,
+    'passwordDigest': passwordDigest,
+  };
 }
 
 class FarmRecord {
@@ -91,22 +90,22 @@ class FarmRecord {
   final String irrigationPlan;
 
   factory FarmRecord.fromJson(Map<String, dynamic> json) => FarmRecord(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        area: (json['area'] as num).toDouble(),
-        crop: json['crop'] as String,
-        sowingDate: json['sowingDate'] as String,
-        irrigationPlan: json['irrigationPlan'] as String? ?? '',
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    area: (json['area'] as num).toDouble(),
+    crop: json['crop'] as String,
+    sowingDate: json['sowingDate'] as String,
+    irrigationPlan: json['irrigationPlan'] as String? ?? '',
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'area': area,
-        'crop': crop,
-        'sowingDate': sowingDate,
-        'irrigationPlan': irrigationPlan,
-      };
+    'id': id,
+    'name': name,
+    'area': area,
+    'crop': crop,
+    'sowingDate': sowingDate,
+    'irrigationPlan': irrigationPlan,
+  };
 }
 
 class AppStore extends ChangeNotifier {
@@ -123,6 +122,9 @@ class AppStore extends ChangeNotifier {
 
   Future<void> initialize() async {
     _preferences = await SharedPreferences.getInstance();
+    currentAccount = null;
+    farms = [];
+    notificationsEnabled = true;
     final sessionId = _preferences.getString(_sessionKey);
     if (sessionId == null) return;
 
@@ -177,7 +179,7 @@ class AppStore extends ChangeNotifier {
     );
     accounts.add(account);
     await _writeAccounts(accounts);
-    await _preferences.setString(_sessionKey, account.id);
+    await _saveSession(account.id);
     currentAccount = account;
     farms = [];
     notificationsEnabled = true;
@@ -198,14 +200,16 @@ class AppStore extends ChangeNotifier {
       }
     }
 
-    if (match == null || _digest(password, match.passwordSalt) != match.passwordDigest) {
+    if (match == null ||
+        _digest(password, match.passwordSalt) != match.passwordDigest) {
       throw const AppStoreException('લૉગિન વિગતો સાચી નથી. ફરી તપાસો.');
     }
 
-    await _preferences.setString(_sessionKey, match.id);
+    await _saveSession(match.id);
     currentAccount = match;
     farms = _readFarms(match.id);
-    notificationsEnabled = _preferences.getBool(_notificationsKey(match.id)) ?? true;
+    notificationsEnabled =
+        _preferences.getBool(_notificationsKey(match.id)) ?? true;
     notifyListeners();
   }
 
@@ -248,7 +252,13 @@ class AppStore extends ChangeNotifier {
 
   Future<void> saveNotificationsEnabled(bool enabled) async {
     final account = _requireAccount();
-    await _preferences.setBool(_notificationsKey(account.id), enabled);
+    final saved = await _preferences.setBool(
+      _notificationsKey(account.id),
+      enabled,
+    );
+    if (!saved) {
+      throw const AppStoreException('સૂચના સેટિંગ સાચવી શકાયું નથી.');
+    }
     notificationsEnabled = enabled;
     notifyListeners();
   }
@@ -299,6 +309,11 @@ class AppStore extends ChangeNotifier {
     if (!saved) throw const AppStoreException('એકાઉન્ટ સાચવી શકાયું નથી.');
   }
 
+  Future<void> _saveSession(String accountId) async {
+    final saved = await _preferences.setString(_sessionKey, accountId);
+    if (!saved) throw const AppStoreException('લૉગિન સેશન સાચવી શકાયું નથી.');
+  }
+
   Future<void> _replaceAccount(FarmerAccount updated) async {
     final accounts = _readAccounts();
     final index = accounts.indexWhere((account) => account.id == updated.id);
@@ -340,13 +355,25 @@ class AppStore extends ChangeNotifier {
 
   String _randomHex(int byteCount) {
     final random = Random.secure();
-    return List<int>.generate(byteCount, (_) => random.nextInt(256))
-        .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
-        .join();
+    return List<int>.generate(
+      byteCount,
+      (_) => random.nextInt(256),
+    ).map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
   }
 
-  String _digest(String password, String salt) =>
-      sha256.convert(utf8.encode('$salt:$password')).toString();
+  String _digest(String password, String salt) {
+    final hmac = Hmac(sha256, utf8.encode(password));
+    final firstBlock = Uint8List.fromList([...utf8.encode(salt), 0, 0, 0, 1]);
+    var u = hmac.convert(firstBlock).bytes;
+    final result = Uint8List.fromList(u);
+    for (var iteration = 1; iteration < 100000; iteration++) {
+      u = hmac.convert(u).bytes;
+      for (var index = 0; index < result.length; index++) {
+        result[index] ^= u[index];
+      }
+    }
+    return result.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
+  }
 }
 
 class AppStoreException implements Exception {

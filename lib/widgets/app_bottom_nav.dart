@@ -17,9 +17,7 @@ class AppBottomNav extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE5EDE3), width: 1),
-        ),
+        border: Border(top: BorderSide(color: Color(0xFFE5EDE3), width: 1)),
         boxShadow: [
           BoxShadow(
             color: Color(0x0A000000),
@@ -32,13 +30,20 @@ class AppBottomNav extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(0, Icons.home_rounded, 'હોમ'),
-              _buildNavItem(1, Icons.eco_rounded, 'પાક'),
-              _buildNavItem(2, Icons.water_drop_outlined, 'સિંચાઈ'),
-              _buildNavItem(3, Icons.grass_rounded, 'ખેતર'),
-              _buildNavItem(4, Icons.person_outline_rounded, 'મારું પ્રોફાઇલ'),
+              Expanded(child: _buildNavItem(0, Icons.home_rounded, 'હોમ')),
+              Expanded(child: _buildNavItem(1, Icons.eco_rounded, 'પાક')),
+              Expanded(
+                child: _buildNavItem(2, Icons.water_drop_outlined, 'સિંચાઈ'),
+              ),
+              Expanded(child: _buildNavItem(3, Icons.grass_rounded, 'ખેતર')),
+              Expanded(
+                child: _buildNavItem(
+                  4,
+                  Icons.person_outline_rounded,
+                  'પ્રોફાઇલ',
+                ),
+              ),
             ],
           ),
         ),
@@ -52,7 +57,7 @@ class AppBottomNav extends StatelessWidget {
       onTap: () => onTap(index),
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -64,8 +69,10 @@ class AppBottomNav extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.hindVadodara(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 color: isSelected ? AppColors.primary : AppColors.textLight,
               ),

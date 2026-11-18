@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../navigation/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_drawer.dart';
 import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/weather_card.dart';
-import '../../widgets/status_badge.dart';
-import '../summary/summary_screen.dart';
-import 'home_screen_v1.dart';
-import 'home_screen_v2.dart';
-import 'home_screen_v3.dart';
-import 'home_screen_v5.dart';
+import '../../widgets/farm_dashboard_sections.dart';
 
 class HomeScreenV4 extends StatefulWidget {
   const HomeScreenV4({super.key});
@@ -19,13 +15,13 @@ class HomeScreenV4 extends StatefulWidget {
 }
 
 class _HomeScreenV4State extends State<HomeScreenV4> {
-  int _navIndex = 0;
+  final int _navIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFBFDF9),
-      drawer: const AppDrawer(activeRoute: 'home_v4'),
+      drawer: const AppDrawer(activeRoute: AppRoutes.homeV4),
       appBar: AppBar(
         leading: Builder(
           builder: (ctx) => IconButton(
@@ -33,45 +29,34 @@ class _HomeScreenV4State extends State<HomeScreenV4> {
             onPressed: () => Scaffold.of(ctx).openDrawer(),
           ),
         ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.eco, color: Color(0xFF4CAF50), size: 20),
-            const SizedBox(width: 4),
-            Text(
-              'AgriConnect',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF16542A),
-              ),
-            ),
-          ],
-        ),
-        centerTitle: true,
-        actions: [
-          Stack(
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: AppColors.textDark, size: 26),
-                onPressed: () {},
-              ),
-              Positioned(
-                right: 10,
-                top: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Text(
-                    '2',
-                    style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                  ),
+              const Icon(Icons.eco, color: Color(0xFF4CAF50), size: 20),
+              const SizedBox(width: 4),
+              Text(
+                'AgriConnect',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF16542A),
                 ),
               ),
             ],
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            tooltip: 'સહાય',
+            icon: const Icon(
+              Icons.notifications_outlined,
+              color: AppColors.textDark,
+              size: 26,
+            ),
+            onPressed: () => AppRoutes.open(context, AppRoutes.support),
           ),
           const SizedBox(width: 8),
         ],
@@ -82,52 +67,62 @@ class _HomeScreenV4State extends State<HomeScreenV4> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Greeting Row
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 6,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'જય સ્વાગત છે!',
-                          style: GoogleFonts.hindVadodara(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textDark,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'તમારા પાક, ખેતર અને સિંચાઈનું\nવ્યવસ્થાપન સરળ બનાવીએ.',
-                          style: GoogleFonts.hindVadodara(
-                            fontSize: 13,
-                            color: AppColors.textMedium,
-                            height: 1.3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 5,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.asset(
-                        'assets/images/illus_landscape_farm.png',
-                        height: 90,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Image.asset(
-                          'assets/images/illus_landscape_tractor.png',
-                          height: 90,
-                          fit: BoxFit.cover,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final greeting = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'જય સ્વાગત છે!',
+                        style: GoogleFonts.hindVadodara(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
                         ),
                       ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'તમારા પાક, ખેતર અને સિંચાઈનું\nવ્યવસ્થાપન સરળ બનાવીએ.',
+                        style: GoogleFonts.hindVadodara(
+                          fontSize: 13,
+                          color: AppColors.textMedium,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  );
+                  final illustration = ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.asset(
+                      'assets/images/illus_landscape_farm.png',
+                      height: 90,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Image.asset(
+                        'assets/images/illus_landscape_tractor.png',
+                        height: 90,
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),
-                ],
+                  );
+                  if (constraints.maxWidth < 360) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        greeting,
+                        const SizedBox(height: 12),
+                        illustration,
+                      ],
+                    );
+                  }
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 6, child: greeting),
+                      const SizedBox(width: 8),
+                      Expanded(flex: 5, child: illustration),
+                    ],
+                  );
+                },
               ),
 
               const SizedBox(height: 16),
@@ -140,14 +135,16 @@ class _HomeScreenV4State extends State<HomeScreenV4> {
                 condition: 'આંશિક વાદળછાયું',
                 humidity: '65%',
                 windSpeed: '12 km/h',
-                onRefresh: () {},
+                onMoreTap: () => AppRoutes.open(context, AppRoutes.weather),
               ),
 
               const SizedBox(height: 20),
 
               // Farm Status Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                spacing: 8,
+                runSpacing: 12,
                 children: [
                   Text(
                     'મારા ખેતરની સ્થિતિ',
@@ -159,7 +156,7 @@ class _HomeScreenV4State extends State<HomeScreenV4> {
                   ),
                   InkWell(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const SummaryScreen()));
+                      AppRoutes.open(context, AppRoutes.farms);
                     },
                     child: Text(
                       'બધા ખેતરો જુઓ >',
@@ -175,61 +172,7 @@ class _HomeScreenV4State extends State<HomeScreenV4> {
 
               const SizedBox(height: 12),
 
-              // 3 Status Cards Row
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatusColumnCard(
-                      iconWidget: Container(
-                        width: 38,
-                        height: 38,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE8F5E9),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.yard_outlined, color: AppColors.primary, size: 20),
-                      ),
-                      countText: '3',
-                      mainLabel: 'સક્રિય ખેતર',
-                      subDetails: 'કુલ વિસ્તાર\n10.4 એકર',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildStatusColumnCard(
-                      iconWidget: Container(
-                        width: 38,
-                        height: 38,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFDCFCE7),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.eco_outlined, color: Color(0xFF16A34A), size: 20),
-                      ),
-                      countText: '4',
-                      mainLabel: 'પાક ઉગડી રહ્યા છે',
-                      subDetails: 'આ સીઝનમાં\nકપાસ, મગફળી, ઘઉં, જીરુ',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildStatusColumnCard(
-                      iconWidget: Container(
-                        width: 38,
-                        height: 38,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE0F2FE),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.water_drop_outlined, color: Color(0xFF0284C7), size: 20),
-                      ),
-                      countText: '2',
-                      mainLabel: 'સિંચાઈ આજે',
-                      subDetails: 'આપોઆપ સિંચાઈ\n1 ખેતરમાં ચાલુ',
-                    ),
-                  ),
-                ],
-              ),
+              const FarmDashboardMetrics(),
 
               const SizedBox(height: 22),
 
@@ -245,139 +188,52 @@ class _HomeScreenV4State extends State<HomeScreenV4> {
 
               const SizedBox(height: 12),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                spacing: 8,
+                runSpacing: 12,
                 children: [
-                  _buildQuickActionSquare(Icons.menu_book_outlined, 'પાક માર્ગદર્શન', const Color(0xFFE8F5E9), AppColors.primary),
-                  _buildQuickActionSquare(Icons.water_damage_outlined, 'સિંચાઈ આયોજન', const Color(0xFFE0F2FE), const Color(0xFF0284C7)),
-                  _buildQuickActionSquare(Icons.shopping_bag_outlined, 'બજાર ભાવ', const Color(0xFFFEF3C7), const Color(0xFFD97706)),
-                  _buildQuickActionSquare(Icons.analytics_outlined, 'ખેતર રિપોર્ટ', const Color(0xFFE8F5E9), const Color(0xFF16A34A)),
-                  _buildQuickActionSquare(Icons.headset_mic_outlined, 'સહાય કેન્દ્ર', const Color(0xFFF3E8FF), const Color(0xFF7C3AED)),
+                  _buildQuickActionSquare(
+                    Icons.menu_book_outlined,
+                    'પાક માર્ગદર્શન',
+                    const Color(0xFFE8F5E9),
+                    AppColors.primary,
+                    AppRoutes.cropAdvisory,
+                  ),
+                  _buildQuickActionSquare(
+                    Icons.water_damage_outlined,
+                    'સિંચાઈ આયોજન',
+                    const Color(0xFFE0F2FE),
+                    const Color(0xFF0284C7),
+                    AppRoutes.irrigation,
+                  ),
+                  _buildQuickActionSquare(
+                    Icons.shopping_bag_outlined,
+                    'બજાર ભાવ',
+                    const Color(0xFFFEF3C7),
+                    const Color(0xFFD97706),
+                    AppRoutes.market,
+                  ),
+                  _buildQuickActionSquare(
+                    Icons.analytics_outlined,
+                    'ખેતર રિપોર્ટ',
+                    const Color(0xFFE8F5E9),
+                    const Color(0xFF16A34A),
+                    AppRoutes.summary,
+                  ),
+                  _buildQuickActionSquare(
+                    Icons.headset_mic_outlined,
+                    'સહાય કેન્દ્ર',
+                    const Color(0xFFF3E8FF),
+                    const Color(0xFF7C3AED),
+                    AppRoutes.support,
+                  ),
                 ],
               ),
 
               const SizedBox(height: 24),
 
-              // Today's Agenda (આજની કાર્યસૂચિ)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'આજની કાર્યસૂચિ',
-                    style: GoogleFonts.hindVadodara(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const SummaryScreen()));
-                    },
-                    child: Text(
-                      'બધી જુઓ >',
-                      style: GoogleFonts.hindVadodara(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              // Item 1
-              _buildAgendaItem(
-                icon: Icons.eco_outlined,
-                iconColor: AppColors.primary,
-                bgColor: const Color(0xFFE8F5E9),
-                title: 'કપાસ - ખેતર 1',
-                activity: 'દવા છંટકાવ',
-                time: '8:00 AM',
-                statusText: 'પૂર્ણ કરો',
-                statusBg: AppColors.badgeGreenBg,
-                statusColor: AppColors.badgeGreenText,
-              ),
-
-              const SizedBox(height: 10),
-
-              // Item 2
-              _buildAgendaItem(
-                icon: Icons.science_outlined,
-                iconColor: const Color(0xFFD97706),
-                bgColor: const Color(0xFFFEF3C7),
-                title: 'મગફળી - ખેતર 2',
-                activity: 'સિંચાઈ ચાલુ કરવી',
-                time: '10:30 AM',
-                statusText: 'ચાલુ છે',
-                statusBg: AppColors.badgeOrangeBg,
-                statusColor: AppColors.badgeOrangeText,
-              ),
-
-              const SizedBox(height: 10),
-
-              // Item 3
-              _buildAgendaItem(
-                icon: Icons.assignment_outlined,
-                iconColor: const Color(0xFF7C3AED),
-                bgColor: const Color(0xFFF3E8FF),
-                title: 'ઘઉં - ખેતર 3',
-                activity: 'ખાતર નાખવું',
-                time: '5:00 PM',
-                statusText: 'આજે માટે',
-                statusBg: AppColors.badgeBlueBg,
-                statusColor: AppColors.badgeBlueText,
-              ),
-
-              const SizedBox(height: 16),
-
-              // Alert Banner
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF7FAF6),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFD4EAD0)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.campaign_outlined, color: AppColors.primary, size: 24),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'મહત્વપૂર્ણ સૂચના',
-                            style: GoogleFonts.hindVadodara(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textDark,
-                            ),
-                          ),
-                          Text(
-                            'આગામી 2 દિવસ સુધી હળવો વરસાદની શક્યતા છે. પાકની સુરક્ષા માટે યોગ્ય વ્યવસ્થા કરો.',
-                            style: GoogleFonts.hindVadodara(
-                              fontSize: 11,
-                              color: AppColors.textMedium,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward, color: AppColors.primary, size: 20),
-                  ],
-                ),
-              ),
+              const FarmDashboardList(title: 'મારા ખેતરો'),
 
               const SizedBox(height: 20),
 
@@ -391,76 +247,22 @@ class _HomeScreenV4State extends State<HomeScreenV4> {
       bottomNavigationBar: AppBottomNav(
         currentIndex: _navIndex,
         onTap: (index) {
-          setState(() => _navIndex = index);
-          if (index != 0) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const SummaryScreen()));
-          }
+          AppRoutes.selectBottomNavigation(context, index);
         },
       ),
     );
   }
 
-  Widget _buildStatusColumnCard({
-    required Widget iconWidget,
-    required String countText,
-    required String mainLabel,
-    required String subDetails,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5EDE3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              iconWidget,
-              const SizedBox(width: 6),
-              Text(
-                countText,
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textDark,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            mainLabel,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.hindVadodara(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textDark,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            subDetails,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.hindVadodara(
-              fontSize: 10,
-              color: AppColors.textLight,
-              height: 1.2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActionSquare(IconData icon, String title, Color bg, Color iconColor) {
+  Widget _buildQuickActionSquare(
+    IconData icon,
+    String title,
+    Color bg,
+    Color iconColor,
+    String route,
+  ) {
     return InkWell(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const SummaryScreen()));
+        AppRoutes.open(context, route);
       },
       child: SizedBox(
         width: 62,
@@ -493,83 +295,6 @@ class _HomeScreenV4State extends State<HomeScreenV4> {
     );
   }
 
-  Widget _buildAgendaItem({
-    required IconData icon,
-    required Color iconColor,
-    required Color bgColor,
-    required String title,
-    required String activity,
-    required String time,
-    required String statusText,
-    required Color statusBg,
-    required Color statusColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5EDE3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: iconColor, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.hindVadodara(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                Text(
-                  activity,
-                  style: GoogleFonts.hindVadodara(
-                    fontSize: 11,
-                    color: AppColors.textMedium,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Row(
-            children: [
-              const Icon(Icons.access_time, size: 14, color: AppColors.textLight),
-              const SizedBox(width: 4),
-              Text(
-                time,
-                style: GoogleFonts.hindVadodara(
-                  fontSize: 11,
-                  color: AppColors.textLight,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 10),
-          StatusBadge(
-            text: statusText,
-            backgroundColor: statusBg,
-            textColor: statusColor,
-          ),
-          const SizedBox(width: 4),
-          const Icon(Icons.chevron_right, size: 18, color: AppColors.textLight),
-        ],
-      ),
-    );
-  }
-
   Widget _buildVariantSwitcher() {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -593,27 +318,42 @@ class _HomeScreenV4State extends State<HomeScreenV4> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _variantChip('વેરિઅન્ટ ૧', onTap: () {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreenV1()));
-                }),
+                _variantChip(
+                  'વેરિઅન્ટ ૧',
+                  onTap: () {
+                    AppRoutes.replace(context, AppRoutes.homeV1);
+                  },
+                ),
                 const SizedBox(width: 8),
-                _variantChip('વેરિઅન્ટ ૨', onTap: () {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreenV2()));
-                }),
+                _variantChip(
+                  'વેરિઅન્ટ ૨',
+                  onTap: () {
+                    AppRoutes.replace(context, AppRoutes.homeV2);
+                  },
+                ),
                 const SizedBox(width: 8),
-                _variantChip('વેરિઅન્ટ ૩', onTap: () {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreenV3()));
-                }),
+                _variantChip(
+                  'વેરિઅન્ટ ૩',
+                  onTap: () {
+                    AppRoutes.replace(context, AppRoutes.homeV3);
+                  },
+                ),
                 const SizedBox(width: 8),
                 _variantChip('વેરિઅન્ટ ૪', isCurrent: true),
                 const SizedBox(width: 8),
-                _variantChip('વેરિઅન્ટ ૫', onTap: () {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreenV5()));
-                }),
+                _variantChip(
+                  'વેરિઅન્ટ ૫',
+                  onTap: () {
+                    AppRoutes.replace(context, AppRoutes.homeV5);
+                  },
+                ),
                 const SizedBox(width: 8),
-                _variantChip('સારાંશ (Summary)', onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const SummaryScreen()));
-                }),
+                _variantChip(
+                  'સારાંશ (Summary)',
+                  onTap: () {
+                    AppRoutes.open(context, AppRoutes.summary);
+                  },
+                ),
               ],
             ),
           ),
@@ -622,7 +362,11 @@ class _HomeScreenV4State extends State<HomeScreenV4> {
     );
   }
 
-  Widget _variantChip(String label, {bool isCurrent = false, VoidCallback? onTap}) {
+  Widget _variantChip(
+    String label, {
+    bool isCurrent = false,
+    VoidCallback? onTap,
+  }) {
     return ActionChip(
       label: Text(
         label,
@@ -633,7 +377,9 @@ class _HomeScreenV4State extends State<HomeScreenV4> {
         ),
       ),
       backgroundColor: isCurrent ? AppColors.primary : Colors.white,
-      side: BorderSide(color: isCurrent ? AppColors.primary : const Color(0xFFCBD5E1)),
+      side: BorderSide(
+        color: isCurrent ? AppColors.primary : const Color(0xFFCBD5E1),
+      ),
       onPressed: onTap,
     );
   }

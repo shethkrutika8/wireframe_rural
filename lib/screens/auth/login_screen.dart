@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../navigation/app_routes.dart';
+import '../../services/app_store.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_drawer.dart';
-import '../home/home_screen_v1.dart';
-import 'register_screen.dart';
-import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,17 +26,23 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() {
-    if (_formKey.currentState?.validate() ?? false) {
-      setState(() => _isLoading = true);
-      Future.delayed(const Duration(milliseconds: 600), () {
-        if (!mounted) return;
-        setState(() => _isLoading = false);
-        Navigator.pushReplacement(
+  Future<void> _handleLogin() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() => _isLoading = true);
+    try {
+      await AppStore.instance.login(
+        identifier: _identifierController.text,
+        password: _passwordController.text,
+      );
+      if (mounted) AppRoutes.replaceAll(context, AppRoutes.homeV1);
+    } on AppStoreException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
           context,
-          MaterialPageRoute(builder: (_) => const HomeScreenV1()),
-        );
-      });
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -53,46 +58,66 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               // Top Bar with Drawer & Brand
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  children: [
-                    Builder(
-                      builder: (ctx) => IconButton(
-                        icon: const Icon(Icons.menu, color: AppColors.textDark),
-                        onPressed: () => Scaffold.of(ctx).openDrawer(),
-                      ),
-                    ),
-                    const Spacer(),
-                    Column(
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.eco, color: Color(0xFF4CAF50), size: 20),
-                            const SizedBox(width: 4),
-                            Text(
-                              'AgriConnect',
-                              style: GoogleFonts.poppins(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF16542A),
-                              ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: SizedBox(
+                  height: 48,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Builder(
+                          builder: (ctx) => IconButton(
+                            icon: const Icon(
+                              Icons.menu,
+                              color: AppColors.textDark,
                             ),
-                          ],
-                        ),
-                        Text(
-                          'ખેડૂતનો સાથી, ખેતીમાં પ્રગતિ સાથે',
-                          style: GoogleFonts.hindVadodara(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textMedium,
+                            onPressed: () => Scaffold.of(ctx).openDrawer(),
                           ),
                         ),
-                      ],
-                    ),
-                    const Spacer(),
-                    const SizedBox(width: 48), // balance drawer icon
-                  ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 48),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.eco,
+                                    color: Color(0xFF4CAF50),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'AgriConnect',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF16542A),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                'ખેડૂતનો સાથી, ખેતીમાં પ્રગતિ સાથે',
+                                style: GoogleFonts.hindVadodara(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textMedium,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
@@ -111,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Image.asset(
                     'assets/images/illus_login.png',
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Image.asset(
+                    errorBuilder: (_, _, _) => Image.asset(
                       'assets/images/illus_landscape_tractor.png',
                       fit: BoxFit.cover,
                     ),
@@ -157,7 +182,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _identifierController,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary, size: 20),
+                          prefixIcon: const Icon(
+                            Icons.person_outline,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
                           hintText: 'મોબાઇલ નંબર અથવા ઈમેઇલ ID દાખલ કરો',
                         ),
                         validator: (value) {
@@ -176,16 +205,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary, size: 20),
+                          prefixIcon: const Icon(
+                            Icons.lock_outline,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
                           hintText: 'પાસવર્ડ દાખલ કરો',
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                              _obscurePassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
                               color: AppColors.textLight,
                               size: 20,
                             ),
                             onPressed: () {
-                              setState(() => _obscurePassword = !_obscurePassword);
+                              setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              );
                             },
                           ),
                         ),
@@ -202,10 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-                            );
+                            AppRoutes.open(context, AppRoutes.forgotPassword);
                           },
                           child: Text(
                             'પાસવર્ડ ભૂલી ગયા છો?',
@@ -236,7 +270,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : Text(
                                   'લૉગિન કરો',
@@ -254,7 +291,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       // "અથવા" Divider
                       Row(
                         children: [
-                          const Expanded(child: Divider(color: Color(0xFFE2EDE0))),
+                          const Expanded(
+                            child: Divider(color: Color(0xFFE2EDE0)),
+                          ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Text(
@@ -265,7 +304,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
-                          const Expanded(child: Divider(color: Color(0xFFE2EDE0))),
+                          const Expanded(
+                            child: Divider(color: Color(0xFFE2EDE0)),
+                          ),
                         ],
                       ),
 
@@ -278,11 +319,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: OutlinedButton(
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Google સાથે લૉગિન સફળ રહ્યું!')),
-                            );
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (_) => const HomeScreenV1()),
+                              const SnackBar(
+                                content: Text(
+                                  'Google લૉગિન ઉપલબ્ધ નથી: આ પ્રોજેક્ટમાં Google auth provider ગોઠવાયેલો નથી.',
+                                ),
+                              ),
                             );
                           },
                           style: OutlinedButton.styleFrom(
@@ -292,25 +333,27 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             backgroundColor: Colors.white,
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.network(
-                                'https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg',
-                                width: 20,
-                                height: 20,
-                                errorBuilder: (_, __, ___) => const Icon(Icons.g_mobiledata, color: Colors.blue, size: 26),
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                'Google સાથે લૉગિન કરો',
-                                style: GoogleFonts.hindVadodara(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textDark,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.g_mobiledata,
+                                  color: Colors.blue,
+                                  size: 26,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Google સાથે લૉગિન કરો',
+                                  style: GoogleFonts.hindVadodara(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textDark,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -321,10 +364,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Center(
                         child: InkWell(
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                            );
+                            AppRoutes.open(context, AppRoutes.register);
                           },
                           child: RichText(
                             text: TextSpan(

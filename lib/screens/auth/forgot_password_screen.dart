@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../navigation/app_routes.dart';
 import '../../theme/app_theme.dart';
-import 'login_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -13,62 +13,44 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _controller = TextEditingController();
   bool _isMobileTab = true;
-  bool _otpSent = false;
-  final _otpController = TextEditingController();
 
   @override
   void dispose() {
     _controller.dispose();
-    _otpController.dispose();
     super.dispose();
   }
 
   void _sendOtp() {
-    if (_controller.text.trim().isEmpty) {
+    final identifier = _controller.text.trim();
+    if (identifier.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_isMobileTab ? 'મોબાઇલ નંબર દાખલ કરો' : 'ઈમેઈલ ID દાખલ કરો')),
-      );
-      return;
-    }
-
-    setState(() => _otpSent = true);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('OTP સફળતાપૂર્વક મોકલવામાં આવ્યો છે!')),
-    );
-  }
-
-  void _verifyOtp() {
-    if (_otpController.text.trim().length < 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('કૃપા કરીને 4 અંકનો OTP દાખલ કરો')),
-      );
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'ચકાસણી સફળ!',
-          style: GoogleFonts.hindVadodara(fontWeight: FontWeight.bold, color: AppColors.primary),
-        ),
-        content: Text(
-          'તમારો OTP માન્ય રહ્યો છે. હવે તમે નવો પાસવર્ડ બનાવી શકો છો.',
-          style: GoogleFonts.hindVadodara(),
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
-            },
-            child: const Text('લૉગિન પર જાઓ'),
+        SnackBar(
+          content: Text(
+            _isMobileTab ? 'મોબાઇલ નંબર દાખલ કરો' : 'ઈમેઈલ ID દાખલ કરો',
           ),
-        ],
+        ),
+      );
+      return;
+    }
+    if (_isMobileTab && !RegExp(r'^\d{10}$').hasMatch(identifier)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('માન્ય 10 અંકનો મોબાઇલ નંબર દાખલ કરો')),
+      );
+      return;
+    }
+    if (!_isMobileTab &&
+        !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(identifier)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('માન્ય ઈમેઈલ દાખલ કરો')));
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'પાસવર્ડ રીકવરી સેવા ગોઠવાયેલ નથી; કોઈ OTP મોકલવામાં આવ્યો નથી.',
+        ),
       ),
     );
   }
@@ -80,7 +62,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primary),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => AppRoutes.replace(context, AppRoutes.login),
         ),
       ),
       body: SafeArea(
@@ -104,7 +86,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       width: 140,
                       height: 140,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
+                      errorBuilder: (_, _, _) => const Icon(
                         Icons.lock_reset,
                         size: 70,
                         color: AppColors.primary,
@@ -151,31 +133,44 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: _isMobileTab ? const Color(0xFFF0FDF4) : Colors.white,
+                          color: _isMobileTab
+                              ? const Color(0xFFF0FDF4)
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: _isMobileTab ? AppColors.primary : const Color(0xFFE2E8F0),
+                            color: _isMobileTab
+                                ? AppColors.primary
+                                : const Color(0xFFE2E8F0),
                             width: _isMobileTab ? 1.5 : 1,
                           ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.phone_outlined,
-                              size: 18,
-                              color: _isMobileTab ? AppColors.primary : AppColors.textLight,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'મોબાઇલ દ્વારા',
-                              style: GoogleFonts.hindVadodara(
-                                fontSize: 13,
-                                fontWeight: _isMobileTab ? FontWeight.bold : FontWeight.w500,
-                                color: _isMobileTab ? AppColors.primary : AppColors.textMedium,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.phone_outlined,
+                                size: 18,
+                                color: _isMobileTab
+                                    ? AppColors.primary
+                                    : AppColors.textLight,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 8),
+                              Text(
+                                'મોબાઇલ દ્વારા',
+                                style: GoogleFonts.hindVadodara(
+                                  fontSize: 13,
+                                  fontWeight: _isMobileTab
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
+                                  color: _isMobileTab
+                                      ? AppColors.primary
+                                      : AppColors.textMedium,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -192,31 +187,44 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: !_isMobileTab ? const Color(0xFFF0FDF4) : Colors.white,
+                          color: !_isMobileTab
+                              ? const Color(0xFFF0FDF4)
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: !_isMobileTab ? AppColors.primary : const Color(0xFFE2E8F0),
+                            color: !_isMobileTab
+                                ? AppColors.primary
+                                : const Color(0xFFE2E8F0),
                             width: !_isMobileTab ? 1.5 : 1,
                           ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.mail_outline,
-                              size: 18,
-                              color: !_isMobileTab ? AppColors.primary : AppColors.textLight,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'ઈમેઈલ દ્વારા',
-                              style: GoogleFonts.hindVadodara(
-                                fontSize: 13,
-                                fontWeight: !_isMobileTab ? FontWeight.bold : FontWeight.w500,
-                                color: !_isMobileTab ? AppColors.primary : AppColors.textMedium,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.mail_outline,
+                                size: 18,
+                                color: !_isMobileTab
+                                    ? AppColors.primary
+                                    : AppColors.textLight,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 8),
+                              Text(
+                                'ઈમેઈલ દ્વારા',
+                                style: GoogleFonts.hindVadodara(
+                                  fontSize: 13,
+                                  fontWeight: !_isMobileTab
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
+                                  color: !_isMobileTab
+                                      ? AppColors.primary
+                                      : AppColors.textMedium,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -241,51 +249,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 6),
               TextField(
                 controller: _controller,
-                keyboardType: _isMobileTab ? TextInputType.phone : TextInputType.emailAddress,
+                keyboardType: _isMobileTab
+                    ? TextInputType.phone
+                    : TextInputType.emailAddress,
                 decoration: InputDecoration(
                   prefixIcon: Icon(
                     _isMobileTab ? Icons.phone_outlined : Icons.mail_outline,
                     color: AppColors.primary,
                     size: 20,
                   ),
-                  hintText: _isMobileTab ? '10 અંકોનો મોબાઇલ નંબર દાખલ કરો' : 'ઈમેઈલ ID દાખલ કરો',
+                  hintText: _isMobileTab
+                      ? '10 અંકોનો મોબાઇલ નંબર દાખલ કરો'
+                      : 'ઈમેઈલ ID દાખલ કરો',
                 ),
               ),
 
-              // OTP field if sent
-              if (_otpSent) ...[
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'OTP દાખલ કરો *',
-                    style: GoogleFonts.hindVadodara(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: _otpController,
-                  keyboardType: TextInputType.number,
-                  maxLength: 6,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.pin, color: AppColors.primary, size: 20),
-                    hintText: '4 અથવા 6 અંકનો OTP દાખલ કરો',
-                  ),
-                ),
-              ],
-
               const SizedBox(height: 20),
 
-              // Action Button (OTP મોકલો / OTP ચકાસો)
+              // Recovery provider is intentionally not simulated.
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _otpSent ? _verifyOtp : _sendOtp,
+                  onPressed: _sendOtp,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1B5E20),
                     shape: RoundedRectangleBorder(
@@ -293,7 +279,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ),
                   child: Text(
-                    _otpSent ? 'OTP ચકાસો અને આગળ વધો' : 'OTP મોકલો',
+                    'રીકવરી વિકલ્પ તપાસો',
                     style: GoogleFonts.hindVadodara(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -316,7 +302,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.verified_user_outlined, color: AppColors.primary, size: 22),
+                    const Icon(
+                      Icons.verified_user_outlined,
+                      color: AppColors.primary,
+                      size: 22,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -331,7 +321,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             ),
                           ),
                           Text(
-                            'તમારો OTP માત્ર થોડી ક્ષણો માટે માન્ય રહેશે.',
+                            'રીકવરી સેવા જોડાયેલી નથી; કોઈ OTP મોકલવામાં આવશે નહીં.',
                             style: GoogleFonts.hindVadodara(
                               fontSize: 12,
                               color: AppColors.textMedium,
@@ -348,7 +338,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               // Return to login link
               InkWell(
-                onTap: () => Navigator.pop(context),
+                onTap: () => AppRoutes.replace(context, AppRoutes.login),
                 child: Text(
                   'લૉગિન પેજ પર પાછા જાઓ',
                   style: GoogleFonts.hindVadodara(

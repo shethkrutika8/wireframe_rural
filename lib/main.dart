@@ -3,6 +3,7 @@ import 'theme/app_theme.dart';
 import 'navigation/app_routes.dart';
 import 'services/app_store.dart';
 import 'screens/splash_screen.dart';
+import 'screens/feature_notice_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/auth/forgot_password_screen.dart';
@@ -42,7 +43,8 @@ class AgriConnectApp extends StatelessWidget {
 
   Route<void> _generateRoute(RouteSettings settings) {
     final requestedRoute = settings.name ?? AppRoutes.splash;
-    final route = AppRoutes.protectedRoutes.contains(requestedRoute) &&
+    final route =
+        AppRoutes.protectedRoutes.contains(requestedRoute) &&
             AppStore.instance.currentAccount == null
         ? AppRoutes.login
         : requestedRoute;
@@ -56,9 +58,35 @@ class AgriConnectApp extends StatelessWidget {
       AppRoutes.settings => const SettingsScreen(),
       AppRoutes.farms => const FarmManagementScreen(section: FarmSection.farms),
       AppRoutes.crops => const FarmManagementScreen(section: FarmSection.crops),
-      AppRoutes.irrigation =>
-        const FarmManagementScreen(section: FarmSection.irrigation),
+      AppRoutes.irrigation => const FarmManagementScreen(
+        section: FarmSection.irrigation,
+      ),
       AppRoutes.summary => const SummaryScreen(),
+      AppRoutes.weather => const FeatureNoticeScreen(
+        title: 'હવામાન',
+        description: 'સ્થાન આધારિત હવામાન અને આગાહી',
+        icon: Icons.cloud_outlined,
+      ),
+      AppRoutes.market => const FeatureNoticeScreen(
+        title: 'બજાર ભાવ',
+        description: 'પાકના હાલના બજાર ભાવ',
+        icon: Icons.storefront_outlined,
+      ),
+      AppRoutes.schemes => const FeatureNoticeScreen(
+        title: 'સરકારી યોજનાઓ',
+        description: 'ખેડૂત સહાય અને યોજનાઓની માહિતી',
+        icon: Icons.account_balance_outlined,
+      ),
+      AppRoutes.cropAdvisory => const FeatureNoticeScreen(
+        title: 'પાક માર્ગદર્શન',
+        description: 'પાક અને જમીન માટે કૃષિ માર્ગદર્શન',
+        icon: Icons.menu_book_outlined,
+      ),
+      AppRoutes.support => const FeatureNoticeScreen(
+        title: 'સહાય કેન્દ્ર',
+        description: 'AgriConnect સહાય અને નિષ્ણાત માર્ગદર્શન',
+        icon: Icons.support_agent_outlined,
+      ),
       AppRoutes.homeV1 => const HomeScreenV1(),
       AppRoutes.homeV2 => const HomeScreenV2(),
       AppRoutes.homeV3 => const HomeScreenV3(),

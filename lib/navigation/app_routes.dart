@@ -13,6 +13,11 @@ class AppRoutes {
   static const crops = '/crops';
   static const irrigation = '/irrigation';
   static const summary = '/summary';
+  static const weather = '/weather';
+  static const market = '/market';
+  static const schemes = '/schemes';
+  static const cropAdvisory = '/crop_advisory';
+  static const support = '/support';
   static const homeV1 = '/home_v1';
   static const homeV2 = '/home_v2';
   static const homeV3 = '/home_v3';
@@ -26,6 +31,11 @@ class AppRoutes {
     crops,
     irrigation,
     summary,
+    weather,
+    market,
+    schemes,
+    cropAdvisory,
+    support,
     homeV1,
     homeV2,
     homeV3,
@@ -47,14 +57,17 @@ class AppRoutes {
   }
 
   static void open(BuildContext context, String route) {
+    if (ModalRoute.of(context)?.settings.name == route) return;
     Navigator.pushNamed(context, route);
   }
 
   static void replace(BuildContext context, String route) {
+    if (ModalRoute.of(context)?.settings.name == route) return;
     Navigator.pushReplacementNamed(context, route);
   }
 
   static void replaceAll(BuildContext context, String route) {
+    if (ModalRoute.of(context)?.settings.name == route) return;
     Navigator.pushNamedAndRemoveUntil(context, route, (_) => false);
   }
 }
